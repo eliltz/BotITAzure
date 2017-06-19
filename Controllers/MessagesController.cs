@@ -12,6 +12,7 @@
     using Microsoft.Bot.Connector;
     using System.Net.Http.Headers;
     using System.Xml.Linq;
+    using LuisBot.Services;
 
     [BotAuthentication]
     public class MessagesController : ApiController
@@ -27,32 +28,32 @@
         {
             if (activity.Type == ActivityTypes.Message)
             {
-              //  if (IsSpellCorrectionEnabled)
-               // {
-                    try
-                    {
-                        //  activity.Text = await this.spellService.GetCorrectedTextAsync(activity.Text);
-                        ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
+                //  if (IsSpellCorrectionEnabled)
+                // {
+                try
+                {
+                    //  activity.Text = await this.spellService.GetCorrectedTextAsync(activity.Text);
+                    ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
 
-                        var input = activity.Text;
-                     
-                        Task.Run(async () =>
-                        {
-                            var accessToken = await GetAuthenticationToken(ApiKey);
-                            var output = await TranslateText(input, targetLang, accessToken);
-                            Console.WriteLine(output);
-                            activity.Text = output;
-                            await Conversation.SendAsync(activity, () => new RootLuisDialog());
+                    var input = activity.Text;
+
+                    Task.Run(async () =>
+                    {
+                      //  var accessToken = await GetAuthenticationToken(ApiKey);
+                        var output = await TranslatorService.TranslateText(input, targetLang);
+                        Console.WriteLine(output);
+                        activity.Text = output;
+                        await Conversation.SendAsync(activity, () => new RootLuisDialog());
                             // Activity reply = activity.CreateReply($"Your text translation to English is => '{output}'");
                             //  await connector.Conversations.ReplyToActivityAsync(reply);
 
                         }).Wait();
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.TraceError(ex.ToString());
-                    }
-               // }
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceError(ex.ToString());
+                }
+                // }
 
                 //await Conversation.SendAsync(activity, () => new RootLuisDialog());
             }
@@ -65,37 +66,39 @@
             return response;
         }
 
-        static async Task<string> TranslateText(string inputText, string language, string accessToken)
-        {
-            string url = "http://api.microsofttranslator.com/v2/Http.svc/Translate";
-            string query = $"?text={System.Net.WebUtility.UrlEncode(inputText)}&to={language}&contentType=text/plain";
+        #region MyRegion
+        //static async Task<string> TranslateText(string inputText, string language, string accessToken)
+        //{
+        //    string url = "http://api.microsofttranslator.com/v2/Http.svc/Translate";
+        //    string query = $"?text={System.Net.WebUtility.UrlEncode(inputText)}&to={language}&contentType=text/plain";
 
-            using (var client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                var response = await client.GetAsync(url + query);
-                var result = await response.Content.ReadAsStringAsync();
+        //    using (var client = new HttpClient())
+        //    {
+        //        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        //        var response = await client.GetAsync(url + query);
+        //        var result = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
-                    return "Hata: " + result;
+        //        if (!response.IsSuccessStatusCode)
+        //            return "Hata: " + result;
 
-                var translatedText = XElement.Parse(result).Value;
-                return translatedText;
-            }
-        }
+        //        var translatedText = XElement.Parse(result).Value;
+        //        return translatedText;
+        //    }
+        //}
 
-        static async Task<string> GetAuthenticationToken(string key)
-        {
-            string endpoint = "https://api.cognitive.microsoft.com/sts/v1.0/issueToken";
+        //static async Task<string> GetAuthenticationToken(string key)
+        //{
+        //    string endpoint = "https://api.cognitive.microsoft.com/sts/v1.0/issueToken";
 
-            using (var client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", key);
-                var response = await client.PostAsync(endpoint, null);
-                var token = await response.Content.ReadAsStringAsync();
-                return token;
-            }
-        }
+        //    using (var client = new HttpClient())
+        //    {
+        //        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", key);
+        //        var response = await client.PostAsync(endpoint, null);
+        //        var token = await response.Content.ReadAsStringAsync();
+        //        return token;
+        //    }
+        //} 
+        #endregion
 
         private Activity HandleSystemMessage(Activity message)
         {

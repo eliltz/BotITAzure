@@ -129,10 +129,12 @@
     <Compile Include="Dialogs\ContextConstants.cs" />
     <Compile Include="Dialogs\CoursesDialog.cs" />
     <Compile Include="Dialogs\RootLuisDialog.cs" />
+    <Compile Include="ExtraContextManager.cs" />
     <Compile Include="FormFlow\EnrollmentApprovalQuery.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\IntentData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\TranslatorService.cs" />
   </ItemGroup>
